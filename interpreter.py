@@ -67,11 +67,6 @@ def parse(expression):
 
                     #if element is a number, it stays a number
                     #otherwise, it's a symbol 
-                    """
-                    #do lstrip('-') to also account for negative numbers
-                    if str(expr_array[x]).lstrip('-').isnumeric() == True: 
-                        expr_array[x] = int(expr_array[x])
-                    """
                     if is_number(str(expr_array[x])):
                         try: #see if the number (int/float) can be converted into int 
                             expr_array[x] = int(expr_array[x])
@@ -111,8 +106,9 @@ def evaluate(expression, var_dict):
 
         #update the values in args by checking the dictionary to see if symbols have been assigned values 
         for i in range(0, len(args)):
-            if args[i] in var_dict:
-                args[i] = var_dict[args[i]]
+            if isinstance(args[i], str):
+                if args[i] in var_dict:
+                    args[i] = var_dict[args[i]]
 
         #defining addition operation 
         if function == '+':
@@ -200,10 +196,6 @@ def evaluate(expression, var_dict):
                 return args[1]
             return args[2]
 
-        #defining the list operation, which just returns the arguments as a list 
-        elif function == 'list':
-            return args
-
         #defining the define operation, which assigns a value to a symbol (stored in a dictionary)
         elif function == 'define':
             x = args[0]
@@ -213,6 +205,18 @@ def evaluate(expression, var_dict):
         #defining the begin operation, which calculates a sequence of expressions and returns the last result 
         elif function == 'begin':
             return args[-1]
+
+        #defining the list operation, which just returns the arguments as a list 
+        elif function == 'list':
+            return args
+
+        #defining the car operation, which returns the first element of the list 
+        elif function == 'car':
+            return args[0][0]
+
+        #defining the cdr operation, which returns all elements except the first element of the list 
+        elif function == 'cdr':
+            return args[0][1:]
 
         #if operation is not supported 
         else:
@@ -236,6 +240,21 @@ while expression != '(quit)':
 
     #parse and evaluate the expression 
     result = evaluate(parse(expression), var_dict)
+
+    #if any element is a list, print it in lisp format 
+    try:
+        for i in range(0, len(result)):
+            if isinstance(result[i], list):
+                result[i] = [str(a) for a in result[i]]
+                result[i] = '(' + ' '.join(result[i]) + ')'
+    except:
+        None
+
+    #if the whole expression is a list, print it in lisp format 
+    if isinstance(result, list):
+        result = [str(a) for a in result]
+        result = '(' + ' '.join(result) + ')'
+        
     print(result)
 
     expression = input("\nbabylisp> ")
